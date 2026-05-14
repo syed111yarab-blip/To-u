@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Hamsa🌕</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #050505;
+            background-image: url('bg1.jpg'); 
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        #treeCanvas {
+            position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%); z-index: 2; opacity: 0.9;
+        }
+
+        #init {
+            position: absolute; z-index: 999; 
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; height: 100%;
+        }
+
+        #start-btn {
+            background: #ffff00; color: #000; border: none;
+            padding: 20px 50px; font-size: 1.4rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.8);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        #main-surprise { display: none; z-index: 100; position: relative; }
+
+        .hb-day { font-size: 1.2rem; color: #ff4081; letter-spacing: 3px; margin-bottom: 5px; font-weight: bold; }
+        
+        .name-container { position: relative; display: inline-block; }
+
+        .crown {
+            position: absolute;
+            top: -22px;
+            left: -12px;
+            font-size: 1.8rem;
+            transform: rotate(-15deg);
+            filter: drop-shadow(0 0 5px gold);
+            z-index: 110;
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ONLY THE LETTERS ARE GOLD */
+        .gold-text {
+            background: linear-gradient(to bottom, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
+        }
+
+        /* MOON STAYS NATURAL */
+        .moon-emoji {
+            -webkit-text-fill-color: initial;
+            margin-left: 5px;
+            filter: drop-shadow(0 0 10px rgba(255, 235, 59, 0.5));
+        }
+
+        .lucky-text { font-size: 0.8rem; color: #ffff00; letter-spacing: 2px; margin-top: 20px; font-weight: bold; }
+        .timer-container { margin-top: 10px; color: #ffff00; font-weight: bold; }
+        .time-row { display: flex; gap: 15px; justify-content: center; font-size: 1.6rem; }
+        .lab { font-size: 0.7rem; color: #ffff00; display: block; margin-top: 5px; }
+        .footer-msg { margin-top: 35px; color: #ff4081; font-style: italic; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+    <canvas id="treeCanvas"></canvas>
+
+    <div id="init">
+        <button id="start-btn" onclick="startEverything()">CLICK ME!</button>
+    </div>
+
+    <div class="content" id="main-surprise">
+        <div class="hb-day">HAPPY BIRTHDAY</div>
+        
+        <div class="name-container">
+            <span class="crown">👑</span>
+            <h1 class="main-title">
+                <span class="gold-text">HAMSA</span><span class="moon-emoji">🌕</span>
+            </h1>
+        </div>
+
+        <div class="lucky-text">THE WORLD GOT LUCKY SINCE</div>
+        
+        <div class="timer-container">
+            <div class="time-row">
+                <div><span id="d">0</span><span class="lab">DAYS</span></div>
+                <div><span id="h">0</span><span class="lab">HOURS</span></div>
+                <div><span id="m">0</span><span class="lab">MINS</span></div>
+                <div><span id="s">0</span><span class="lab">SECS</span></div>
+            </div>
+        </div>
+
+        <div class="footer-msg">I’ll give you all the love that one can! ❤️</div>
+    </div>
+
+    <audio id="mySong" loop><source src="song.mp3" type="audio/mpeg"></audio>
+
+    <script>
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+
+        const birthDate = new Date(2000, 5, 5); 
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - birthDate;
+            document.getElementById('d').innerText = Math.floor(diff / 86400000);
+            document.getElementById('h').innerText = Math.floor((diff / 3600000) % 24);
+            document.getElementById('m').innerText = Math.floor((diff / 60000) % 60);
+            document.getElementById('s').innerText = Math.floor((diff / 1000) % 60);
+        }
+
+        function drawBranch(x, y, len, angle, branchWidth) {
+            ctx.beginPath(); ctx.save(); ctx.strokeStyle = "#fff"; ctx.lineWidth = branchWidth;
+            ctx.translate(x, y); ctx.rotate(angle * Math.PI / 180); ctx.moveTo(0, 0); ctx.lineTo(0, -len); ctx.stroke();
+            if (len < 10) {
+                ctx.beginPath(); ctx.arc(0, -len, 4, 0, Math.PI * 2);
+                ctx.fillStyle = Math.random() > 0.5 ? "#ff4081" : "#ffff00";
+                ctx.fill(); ctx.restore(); return;
+            }
+            drawBranch(0, -len, len * 0.75, angle + 15, branchWidth * 0.8);
+            drawBranch(0, -len, len * 0.75, angle - 15, branchWidth * 0.8); ctx.restore();
+        }
+
+        function startEverything() {
+            document.body.style.backgroundImage = "url('bg2.jpg')";
+            document.getElementById('init').style.display = 'none';
+            document.getElementById('main-surprise').style.display = 'block';
+            document.getElementById('mySong').play();
+            drawBranch(canvas.width / 2, canvas.height, 110, 0, 8);
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4081', '#ffff00', '#ffffff'] });
+        }
+        setInterval(updateTimer, 1000); updateTimer();
+    </script>
+</body>
+</html>
